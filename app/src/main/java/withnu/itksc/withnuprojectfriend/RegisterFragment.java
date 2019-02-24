@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import java.io.File;
+
+import it.sauronsoftware.ftp4j.FTPClient;
+import it.sauronsoftware.ftp4j.FTPDataTransferListener;
 
 
 /**
@@ -142,11 +149,60 @@ public class RegisterFragment extends Fragment {
                 String nameImage = pathImageString.substring(pathImageString.lastIndexOf("/"));
                 Log.d("24FebV1","NameImage ==>" + nameImage);
 
+                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
+                    File file = new File(pathImageString);
+                    FTPClient ftpClient = new FTPClient();
+
+                try {
+
+                    ftpClient.connect("ftp.androidthai.in.th",21);
+                    ftpClient.login("ksu@androidthai.in.th", "Abc12345");
+                    ftpClient.changeDirectory("WithnuKSU");
+                    ftpClient.upload(file, new uploadListener());
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                    try {
+                        ftpClient.disconnect(true);
+                    }catch (Exception e1){
+                        e1.printStackTrace();
+                    }
+                }
 
         } // if
 
     }   // checkValue
+
+    public class uploadListener implements FTPDataTransferListener {
+
+        @Override
+        public void started() {
+            Toast.makeText(getActivity(),"Start Upload", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void transferred(int i) {
+            Toast.makeText(getActivity(),"Continue Upload...", Toast.LENGTH_SHORT).show();
+
+
+        }
+
+        @Override
+        public void completed() {
+            Toast.makeText(getActivity(),"Complete Upload", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void aborted() {
+
+        }
+
+        @Override
+        public void failed() {
+
+        }
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
