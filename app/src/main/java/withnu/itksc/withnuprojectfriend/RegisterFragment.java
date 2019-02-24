@@ -159,6 +159,15 @@ public class RegisterFragment extends Fragment {
                 ftpClient.changeDirectory("WithnuKSU");
                 ftpClient.upload(file, new uploadListener());
 
+
+                AddUserThread addUserThread = new AddUserThread(getActivity());
+                addUserThread.execute(name, user, password, "http://androidthai.in.th/ksu/WithnuKSU/IMG20190224104235.jpg" + nameImage);
+                String result = addUserThread.get();
+
+                if (Boolean.parseBoolean(result)){
+                    getActivity().getSupportFragmentManager().popBackStack();
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
                 try {
