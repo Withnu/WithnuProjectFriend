@@ -1,6 +1,5 @@
 package withnu.itksc.withnuprojectfriend;
 
-
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -50,7 +49,7 @@ public class RegisterFragment extends Fragment {
 //        Create Toolbar
         createToolbar();
 
-        //Choose Image
+        //        Choose Image
         chooseImage();
 
 
@@ -71,12 +70,13 @@ public class RegisterFragment extends Fragment {
                 Bitmap bitmap1 = Bitmap.createScaledBitmap(bitmap, 800, 600, false);
                 imageView.setImageBitmap(bitmap1);
 
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-        } // if
 
+        }   // if
 
     }
 
@@ -88,11 +88,11 @@ public class RegisterFragment extends Fragment {
 
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
-
                 startActivityForResult(Intent.createChooser(intent, "Please Choose App"), 1);
+
             }
         });
-    } // Choose Image
+    }
 
 
     @Override
@@ -112,85 +112,80 @@ public class RegisterFragment extends Fragment {
         MyAlert myAlert = new MyAlert(getActivity());
 
         EditText nameEditText = getView().findViewById(R.id.edtName);
-        EditText usernameEditText = getView().findViewById(R.id.edtUsername);
+        EditText userEditText = getView().findViewById(R.id.edtUsername);
         EditText passwordEditText = getView().findViewById(R.id.edtPassword);
 
-//      to String
         String name = nameEditText.getText().toString().trim();
-        String username = usernameEditText.getText().toString().trim();
+        String user = userEditText.getText().toString().trim();
         String password = passwordEditText.getText().toString().trim();
 
 
         if (aBoolean) {
 //            Non Choose Image
-            myAlert.normalDialog("Non Choose Image", "Please Choose Avatar");
-        } else if (name.isEmpty() || username.isEmpty() || password.isEmpty()) {
-            myAlert.normalDialog("Have Space","Please, fill all bank.");
+            myAlert.normalDialog("Non Choose Image", "Please Choose Avata");
+        } else if (name.isEmpty() || user.isEmpty() || password.isEmpty()) {
+//            Have Space
+            myAlert.normalDialog("Have Space", "Please Fill All Blank");
         } else {
 
-//            Upload Image to Server
-                String pathImageString = null;
-                String[] strings = new String[]{MediaStore.Images.Media.DATA};
-                Cursor cursor = getActivity().getContentResolver().query(uri, strings, null, null, null);
+//            upload Image To Server
+            String pathImageString = null;
+            String[] strings = new String[]{MediaStore.Images.Media.DATA};
+            Cursor cursor = getActivity().getContentResolver().query(uri, strings, null, null, null);
+            if (cursor != null) {
 
-                if (cursor != null){
+                cursor.moveToFirst();
+                int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                pathImageString = cursor.getString(index);
 
-                    cursor.moveToFirst();
-                    int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                    pathImageString = cursor.getString(index);
+            } else {
+                pathImageString = uri.getPath();
+            }
 
-                }else {
+            Log.d("24FebV1", "path ==> " + pathImageString);
+            String nameImage = pathImageString.substring(pathImageString.lastIndexOf("/"));
+            Log.d("24FebV1", "NameImage ==> " + nameImage);
 
-                    pathImageString = uri.getPath();
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
 
-                }
+            File file = new File(pathImageString);
+            FTPClient ftpClient = new FTPClient();
 
-                Log.d("24FebV1", "path ==> " + pathImageString);
-                String nameImage = pathImageString.substring(pathImageString.lastIndexOf("/"));
-                Log.d("24FebV1","NameImage ==>" + nameImage);
+            try {
 
-                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                ftpClient.connect("ftp.androidthai.in.th", 21);
+                ftpClient.login("ksu@androidthai.in.th", "Abc12345");
+                ftpClient.changeDirectory("WithnuKSU");
+                ftpClient.upload(file, new uploadListener());
 
-                    File file = new File(pathImageString);
-                    FTPClient ftpClient = new FTPClient();
-
+            } catch (Exception e) {
+                e.printStackTrace();
                 try {
-
-                    ftpClient.connect("ftp.androidthai.in.th",21);
-                    ftpClient.login("ksu@androidthai.in.th", "Abc12345");
-                    ftpClient.changeDirectory("WithnuKSU");
-                    ftpClient.upload(file, new uploadListener());
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                    try {
-                        ftpClient.disconnect(true);
-                    }catch (Exception e1){
-                        e1.printStackTrace();
-                    }
+                    ftpClient.disconnect(true);
+                } catch (Exception e1) {
+                    e1.printStackTrace();
                 }
+            }
 
-        } // if
+        }   // if
 
     }   // checkValue
 
     public class uploadListener implements FTPDataTransferListener {
-
         @Override
         public void started() {
-            Toast.makeText(getActivity(),"Start Upload", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Start Upload", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void transferred(int i) {
-            Toast.makeText(getActivity(),"Continue Upload...", Toast.LENGTH_SHORT).show();
-
-
+            Toast.makeText(getActivity(), "Continue Upload ...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void completed() {
-            Toast.makeText(getActivity(),"Complete Upload", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Completed Upload", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -203,6 +198,7 @@ public class RegisterFragment extends Fragment {
 
         }
     }
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -234,4 +230,3 @@ public class RegisterFragment extends Fragment {
     }
 
 }
-
